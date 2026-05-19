@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.env
+
+# Test Reports
+reports/report.html
+reports/screenshots/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# WebDriver cache
+.wdm/
+
+# OS
+.DS_Store
+Thumbs.db

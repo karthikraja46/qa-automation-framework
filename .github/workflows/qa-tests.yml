@@ -1,0 +1,77 @@
+name: QA Automation Suite — OrangeHRM
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:        # allow manual trigger from GitHub UI
+
+jobs:
+  run-tests:
+    name: Run Selenium Test Suite (Headless Chrome)
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout code ──────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Set up Python ─────────────────────────────────
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ── 3. Cache pip dependencies ─────────────────────────
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # ── 4. Install dependencies ───────────────────────────
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      # ── 5. Install Chrome ─────────────────────────────────
+      - name: Install Google Chrome
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list'
+          sudo apt-get update -q
+          sudo apt-get install -y google-chrome-stable
+
+      # ── 6. Create reports directory ────────────────────────
+      - name: Create reports directory
+        run: mkdir -p reports/screenshots
+
+      # ── 7. Run smoke tests ─────────────────────────────────
+      - name: Run Smoke Tests
+        run: pytest -m smoke --tb=short
+        continue-on-error: false
+
+      # ── 8. Run full regression suite ──────────────────────
+      - name: Run Full Regression Suite
+        run: pytest -m regression --tb=short
+        continue-on-error: true
+
+      # ── 9. Upload HTML report as artifact ─────────────────
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-html-report
+          path: reports/report.html
+          retention-days: 14
+
+      # ── 10. Upload screenshots on failure ─────────────────
+      - name: Upload Failure Screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: failure-screenshots
+          path: reports/screenshots/
+          retention-days: 7

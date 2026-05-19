@@ -180,8 +180,3 @@ Tests run automatically on GitHub Actions on every push to `main` or `develop`, 
 | Target Application | OrangeHRM Demo |
 
 ---
-
-## Author
-
-**Karthik Raja Nichenametla**
-QA Engineer | [LinkedIn](https://linkedin.com) | [Portfolio](https://portfolio.com)
